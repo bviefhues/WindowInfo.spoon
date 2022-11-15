@@ -1,6 +1,6 @@
---- === WindowInfo.spoon ===
+--- === WindowInfo ===
 ---
---- Display information on focussed window and it's application.
+--- Display information on focussed window, it's application and it's screen.
 
 require("hs.hotkey")
 require("hs.window")
@@ -32,29 +32,8 @@ function obj.show()
 
     local w = hs.window.focusedWindow()
     if w then
-        local a = w:application()
-        if a then
-            appicon = hs.image.iconForFile(a:path())
-            table.insert(choices, {
-                text=a:name(), 
-                subText="Application Name", 
-                image=appicon})
-            table.insert(choices, {
-                text=a:title(), 
-                subText="Application Title", 
-                image=appicon})
-            table.insert(choices, {
-                text=a:bundleID(), 
-                subText="Application bundleID", 
-                image=appicon})
-            table.insert(choices, {
-                text=a:path(), 
-                subText="Application Path", 
-                image=appicon})
-        else
-            hs.alert.show("No application")
-        end
-        winsnapshot = w:snapshot()
+        -- window
+        local winsnapshot = w:snapshot()
         table.insert(choices, {
             text=w:title(), 
             subText="Window Title", 
@@ -76,6 +55,48 @@ function obj.show()
             text=w:subrole(), 
             subText="Window Subrole", 
             image=winsnapshot})
+        
+        -- application
+        local a = w:application()
+        if a then
+            appicon = hs.image.iconForFile(a:path())
+            table.insert(choices, {
+                text=a:name(), 
+                subText="Application Name", 
+                image=appicon})
+            table.insert(choices, {
+                text=a:title(), 
+                subText="Application Title", 
+                image=appicon})
+            table.insert(choices, {
+                text=a:bundleID(), 
+                subText="Application bundleID", 
+                image=appicon})
+            table.insert(choices, {
+                text=a:path(), 
+                subText="Application Path", 
+                image=appicon})
+        end
+
+        -- screen
+        local s = w:screen()
+        local screensnapshot = s:snapshot()
+        if s then
+            table.insert(choices, {
+                text=s:name(),
+                subText="Screen Name", 
+                image=screensnapshot})
+            table.insert(choices, {
+                text="x=" .. s:frame()._x .. " y=" .. s:frame()._y .. 
+                     " w=" .. s:frame()._w .. " h=" .. s:frame()._h, 
+                subText="Screen Frame", 
+                image=screensnapshot})
+            table.insert(choices, {
+                text="x=" .. s:fullFrame()._x .. " y=" .. s:fullFrame()._y .. 
+                     " w=" .. s:fullFrame()._w .. " h=" .. s:fullFrame()._h, 
+                subText="Screen Full Frame", 
+                image=screensnapshot})
+        end
     else
         hs.alert.show("No window")
     end
@@ -92,11 +113,11 @@ end
 --- Parameters:
 ---  * mapping - A table containing hotkey modifier/key details for 
 ---    the following items:
----   * show - show window information chooser. Selecting an item in the
---             chooser copies the text to the pasteboard (clipboard)
+---  * show - show window information chooser. Selecting an item in the
+---    chooser copies the text to the pasteboard (clipboard)
 ---
 --- Returns:
----  * The TilingWindowManager object
+---  * The WindowInfo object
 function obj:bindHotkeys(mapping)
     local def = {
         show = obj.show
